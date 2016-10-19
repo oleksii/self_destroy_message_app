@@ -7,7 +7,7 @@ require 'base64'
 Bundler.require 
 require './models/message' 
  
-DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
+DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://sinatra:pass@localhost/messages') 
 
 class MessageGhost < Sinatra::Base
 
