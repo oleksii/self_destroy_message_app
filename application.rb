@@ -6,8 +6,14 @@ require 'base64'
  
 Bundler.require 
 require './models/message' 
- 
-DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://sinatra:pass@localhost/messages') 
+
+configure :development do 
+  DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
+end
+
+configure :production do 
+  DataMapper.setup(:default, ENV['HEROKU_POSTGRESQL_RED_URL']) 
+end
 
 class MessageGhost < Sinatra::Base
 
