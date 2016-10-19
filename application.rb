@@ -1,6 +1,6 @@
 require 'sinatra/base'
-require './url_helpers'
 require 'bundler' 
+require './url_helpers'
 require 'openssl'
 require 'base64'
  
@@ -8,11 +8,15 @@ Bundler.require
 require './models/message' 
 
 configure :development do 
-  DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
+ DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
+ DataMapper.auto_migrate!
+ DataMapper.auto_upgrade!
 end
 
 configure :production do 
-  DataMapper.setup(:default, ENV['DATABASE_URL']) 
+ DataMapper.setup(:default, ENV['DATABASE_URL']) 
+ DataMapper.auto_migrate!
+ DataMapper.auto_upgrade!
 end
 
 class MessageGhost < Sinatra::Base

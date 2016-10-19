@@ -12,11 +12,11 @@
   <% @messages.each do |message| %>
   <div class="panel-body">    
     <div class="row">
-      <div class="col-md-8">
+      <div class="col-md-10">
         <p>Link to message <%= link_to "#{@message_link}#{message_path(message)}", message_path(message) %> created at <i><%= message.created_at %></i> with method <b><%= message.method %></b>
       </p>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
         <%= link_to "EDIT", edit_message_path(message), class: "btn btn-mini btn-danger pull-right"%>
       </div>
     </div>
