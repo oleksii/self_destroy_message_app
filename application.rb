@@ -7,7 +7,6 @@ require 'base64'
 Bundler.require 
 require './models/message' 
  
-#DataMapper.setup(:default, 'sqlite::memory:') 
 DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
 
 class MessageGhost < Sinatra::Base
@@ -31,23 +30,22 @@ class MessageGhost < Sinatra::Base
     erb :form
   end
 
-  #need to figure out why show method is calling when app render form view (maybe application.js)
-
   get '/messages/:id' do #show
     @message = Message.get message_id
+    if @message #to avoid 500 after new template loaded
+      if @message.should_by_destroyed? 
+        @message.destroy
 
-    if @message.should_by_destroyed? 
-      @message.destroy
+        erb :blank 
+      elsif params[:message] != nil && message_password == @message.password
+        @message_descrypted = message_descrypted(@message)
 
-      erb :blank 
-    elsif params[:message] != nil && message_password == @message.password
-      @message_descrypted = message_descrypted(@message)
+        @message.update showed: true unless @message.method == 'time'
 
-      @message.update showed: true unless @message.method == 'time'
-
-      erb :show
-    else 
-      erb :ask_pass
+        erb :show
+      else 
+        erb :ask_pass
+      end
     end
   end
 
