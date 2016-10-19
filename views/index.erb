@@ -1,0 +1,25 @@
+<div class="panel panel-info">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-6">
+        <h3 class="muted"> Messages </h3>
+      </div>
+      <div class="col-md-6" style="margin-top: 10px;">
+        <%=link_to "NEW", new_message_path, class: "btn btn-large btn-primary pull-right" %>
+      </div>
+    </div>
+  </div>
+  <% @messages.each do |message| %>
+  <div class="panel-body">    
+    <div class="row">
+      <div class="col-md-8">
+        <p>Link to message <%= link_to "#{@message_link}#{message_path(message)}", message_path(message) %> created at <i><%= message.created_at %></i> with method <b><%= message.method %></b>
+      </p>
+      </div>
+      <div class="col-md-4">
+        <%= link_to "EDIT", edit_message_path(message), class: "btn btn-mini btn-danger pull-right"%>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>

@@ -1,0 +1,46 @@
+<div class="panel panel-info">
+
+  <div class="panel-heading">
+    <h3> Create your message </h3>
+  </div>
+
+  <form action="<%= messages_path %>" method="POST" class="navbar-form">
+
+    <div class="control_group">
+      <div class="panel-body">    
+        <div class="row">
+          <div class="col-md-12">
+            <textarea name='message[text]' placeholder="Text of message" class='form-control' style="width: 254px; height: 100px;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-body">    
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group">
+              <p><input type='radio' name='message[method]' value='time'> Delete the message through 1 hour </p>
+              <p><input type='radio' name='message[method]' value='view'> Delete after the message will be viewed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-body">    
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group">
+              <input type="text" id="password" placeholder="Password" name='message[password]' value='' class='form-control'>
+              <span class="input-group-btn">
+                <button type="submit" class="btn">Save</button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </form>
+
+</div>
