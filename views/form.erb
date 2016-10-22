@@ -1,3 +1,7 @@
+<% if flash[:errors] %>
+  <%= erb :_errors, locals: {errors: flash[:errors]} %>
+<% end %>
+
 <div class="panel panel-info">
 
   <div class="panel-heading">

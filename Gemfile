@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem "thin" 
 gem "sinatra"
 gem 'sinatra-contrib'
+gem 'sinatra-flash'
 gem 'rake'
 gem 'data_mapper'
 gem 'dm-core'
