@@ -1,0 +1,29 @@
+<% if flash[:errors] %>
+  <div class="alert alert-warning">
+    <strong>Warning!</strong><%= flash[:errors] %>
+  </div>
+<% end %>
+
+<div class="panel panel-info">
+
+  <div class="panel-heading">
+    <h3>login</h3>
+  </div>
+ 
+  <form action="<%= '/session' %>" method="POST" class="form-inline" style="text-align: center;">
+    <div class="panel-body">    
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <input type="text" class="form-control" id="email" placeholder="Email" name="user[username]" value=''>
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="password" placeholder="Password" name="user[password]" value=''>
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>

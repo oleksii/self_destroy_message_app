@@ -7,16 +7,16 @@
     </div>
   </div>
 
-  <form action="<%= message_path(@message) %>" method="POST" class="form-horizontal">
+  <form action="<%= message_path(@message) %>" method="POST" class="navbar-form" style="text-align: center;">
     <input type='hidden' name='_method' value='GET' />
 
     <div class="panel-body">    
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <div class="input-group">
             <input type="text" id="password" placeholder="Password" name='message[password]' value='' class='form-control'>
             <span class="input-group-btn">
-              <button type="submit" class="btn">Push the button to see your message</button>
+              <button type="submit" class="btn">Show</button>
             </span>
           </div>
         </div>

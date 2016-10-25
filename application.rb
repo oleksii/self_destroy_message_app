@@ -5,25 +5,28 @@ require 'openssl'
 require 'base64'
  
 Bundler.require 
-require './models/message' 
-require 'sinatra/flash' 
+$: << File.dirname(__FILE__) + "/models"
+require 'model'
+require 'sinatra/flash'
 require './message_params'
+require 'warden'
 
-configure :development do 
- DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages') 
+configure :development do
+  DataMapper.setup(:default, 'postgres://sinatra:pass@localhost/messages')
+#  DataMapper.auto_migrate!
+#  DataMapper.auto_upgrade!
 end
 
-configure :production do 
- DataMapper.setup(:default, ENV['DATABASE_URL']) 
- DataMapper.auto_migrate!
- DataMapper.auto_upgrade!
+configure :production do
+  DataMapper.setup(:default, ENV['DATABASE_URL'])
+  DataMapper.auto_migrate!
+  DataMapper.auto_upgrade!
 end
 
 class MessageGhost < Sinatra::Base
+  #enable :sessions
+  use Rack::Session::Cookie, secret: "MY_SECRET"
   register Sinatra::Flash
-
-  enable :sessions
-
   helpers UrlHelpers
 
   get '/' do
@@ -31,21 +34,30 @@ class MessageGhost < Sinatra::Base
   end
 
   get '/messages' do #index
+    check_authentication
+
     @messages = Message.all
     @message_link = message_link
 
+    #raise env['warden'].inspect
     erb :index
   end
 
   get '/messages/new' do #new
+    check_authentication
+
     @message = Message.new
 
     erb :form
   end
 
   get '/messages/:id' do #show
-    @message = Message.get message_id
-    if @message #to avoid 500 after new template loaded
+    @message = Message.first(id: message_id)
+
+    if @message == nil
+
+      erb :blank
+    else
       if @message.should_by_destroyed? 
         @message.destroy
 
@@ -63,7 +75,9 @@ class MessageGhost < Sinatra::Base
   end
 
   post "/messages" do #create
-    message = Message.new
+    check_authentication
+
+    message = current_user.messages.new
     message.text = message_encrypted(message_params)
     message.password = message_params.password
     message.method = message_params.method
@@ -81,14 +95,18 @@ class MessageGhost < Sinatra::Base
   end
 
   get "/messages/:id/edit" do #edit
-    @message = Message.get message_id
+    check_authentication
+
+    @message = Message.get message_id, current_user.id
     @message_descrypted = message_descrypted(@message)
 
     erb :edit
   end
 
   put "/messages/:id" do #update
-    message = Message.get message_id
+    check_authentication
+
+    message = Message.get message_id, current_user.id
 
     if message.update text: message_encrypted(message_params), password: message_params.password, method: message_params.method
       flash[:success] = "the message was updated"
@@ -102,12 +120,98 @@ class MessageGhost < Sinatra::Base
 
   end
 
-  delete "/messages/:id" do #destroy
-    @message = Message.get message_id
-    @message.destroy
+  #delete "/messages/:id" do #destroy
+  #  @message = current_user.messages.get message_id
+  #  @message.destroy
 
-    redirect messages_path
+  #  redirect messages_path
+  #end
+
+######## login part #####
+  #post '/auth/signup' do
+  #  user = User.new(:email => params[:email], :password => params[:password])
+  #  user.save
+  #  env['warden'].success!(user)
+  #end
+
+  get "/login" do
+    #raise env['warden'].raw_session.inspect
+    erb '/login'.to_sym
   end
+
+  post "/session" do
+    warden_handler.authenticate!
+    if warden_handler.authenticated?
+      flash[:success] = "Successfully logged in"
+
+      redirect messages_path
+    else
+      redirect "/login"
+    end
+  end
+
+  get "/logout" do
+    warden_handler.logout
+
+    redirect '/login'
+  end
+
+  post "/unauthenticated" do
+    #raise env['warden.options'].inspect
+    flash[:errors] = env['warden.options'][:message] || "Try again"
+
+    #redirect session[:return_to]
+    redirect "/login"
+  end
+
+# Warden configuration code
+  #use Rack::Session::Cookie, secret: 'my secret'
+
+  use Warden::Manager do |manager|
+    manager.default_strategies :password
+    manager.failure_app = self
+    manager.serialize_into_session {|user| user.id}
+    manager.serialize_from_session {|id| User.get(id)}
+  end
+
+  Warden::Manager.before_failure do |env,opts|
+    env['REQUEST_METHOD'] = 'POST'
+
+    #env.each do |key, value|
+    #  env[key]['_method'] = 'put' if key == 'rack.request.form_hash'
+    #end
+  end
+
+  Warden::Strategies.add(:password) do
+    def valid?
+      params['user']['username'] || params['user']['password']
+    end
+
+    def authenticate!
+      user = User.find(params['user']['username']).first
+      if user && user.authenticate(params['user']['password'])
+        success!(user)
+      else
+        fail!("Could not log in")
+      end
+    end
+  end
+
+  def warden_handler
+    env['warden']
+  end
+
+  def check_authentication
+    unless warden_handler.authenticated?
+      redirect '/login'
+    end
+  end
+
+  def current_user
+    warden_handler.user
+  end
+
+###### end of login part #######
 
   protected
     def message_id

@@ -8,7 +8,7 @@
     <h3> Edit your message </h3>
   </div>
 
-  <form action="<%= message_path(@message) %>" method="POST" class="navbar-form">
+  <form action="<%= message_path(@message) %>" method="POST" class="navbar-form" style="text-align: center;">
     <input type='hidden' name='_method' value='PUT' />
 
     <div class="control_group">
@@ -25,8 +25,8 @@
         <div class="row">
           <div class="col-md-12">
             <div class="input-group">
-              <p><input type='radio' name='message[method]' value='time'> Delete the message through 1 hour </p>
               <p><input type='radio' name='message[method]' value='view'> Delete after the message will be viewed</p>
+              <p><input type='radio' name='message[method]' value='time'> Delete the message through 1 hour </p>
             </div>
           </div>
         </div>
