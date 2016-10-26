@@ -36,7 +36,7 @@ class MessageGhost < Sinatra::Base
   get '/messages' do #index
     check_authentication
 
-    @messages = Message.all
+    @messages = current_user.messages.all
     @message_link = message_link
 
     #raise env['warden'].inspect
@@ -127,20 +127,42 @@ class MessageGhost < Sinatra::Base
   #  redirect messages_path
   #end
 
-######## login part #####
-  #post '/auth/signup' do
-  #  user = User.new(:email => params[:email], :password => params[:password])
-  #  user.save
-  #  env['warden'].success!(user)
-  #end
+######## Sign up part #######
+
+  get '/signup' do
+
+    erb '/signup'.to_sym
+  end
+
+  post '/signup' do
+    if User.get params[:email]
+
+      redirect '/login'.to_sym
+    else
+      user = User.new(username: params[:user][:username], password: params[:user][:password])
+      user.save
+
+      if user.saved?
+
+        redirect '/login'.to_sym
+      else
+
+        redirect '/signup'.to_sym
+      end
+    end
+  end
+
+
+######## Sign in part #####
 
   get "/login" do
-    #raise env['warden'].raw_session.inspect
+
     erb '/login'.to_sym
   end
 
   post "/session" do
     warden_handler.authenticate!
+
     if warden_handler.authenticated?
       flash[:success] = "Successfully logged in"
 
@@ -157,15 +179,12 @@ class MessageGhost < Sinatra::Base
   end
 
   post "/unauthenticated" do
-    #raise env['warden.options'].inspect
     flash[:errors] = env['warden.options'][:message] || "Try again"
 
-    #redirect session[:return_to]
     redirect "/login"
   end
 
 # Warden configuration code
-  #use Rack::Session::Cookie, secret: 'my secret'
 
   use Warden::Manager do |manager|
     manager.default_strategies :password
@@ -176,19 +195,16 @@ class MessageGhost < Sinatra::Base
 
   Warden::Manager.before_failure do |env,opts|
     env['REQUEST_METHOD'] = 'POST'
-
-    #env.each do |key, value|
-    #  env[key]['_method'] = 'put' if key == 'rack.request.form_hash'
-    #end
   end
 
   Warden::Strategies.add(:password) do
     def valid?
-      params['user']['username'] || params['user']['password']
+      params['user']['username'] && params['user']['password']
     end
 
     def authenticate!
-      user = User.find(params['user']['username']).first
+      user = User.first(username: params['user']['username'])
+
       if user && user.authenticate(params['user']['password'])
         success!(user)
       else
